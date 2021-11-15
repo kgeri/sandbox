@@ -7,14 +7,12 @@ import com.hazelcast.config.MapStoreConfig;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.map.IMap;
-import com.hazelcast.map.MapLoaderLifecycleSupport;
-import com.hazelcast.map.MapStoreAdapter;
+import org.ogreg.hazelcast.VersioningMapStore.OptimisticLockingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.util.Map;
-import java.util.Properties;
 
 public class BulkOptimisticLockingNode {
 	private static final Logger log = LoggerFactory.getLogger(BulkOptimisticLockingNode.class);
@@ -43,68 +41,42 @@ public class BulkOptimisticLockingNode {
 
 		HazelcastInstance hz = HazelcastClient.newHazelcastClient(c);
 
-		optimisticLockingWithMapStoreHack(hz);
+		// Simple test data that's guaranteed to fail the version check
+		Map<String, Position> sampleBatch1 = Map.of(
+				"ACCOUNT1", new Position(1),
+				"ACCOUNT2", new Position(2),
+				"ACCOUNT3", new Position(1)
+		);
+		Map<String, Position> sampleBatch2 = Map.of(
+				"ACCOUNT1", new Position(2),
+				"ACCOUNT2", new Position(2),
+				"ACCOUNT3", new Position(2)
+		);
+
+		optimisticLockingWithEntryProcessor(hz, sampleBatch1);
+		optimisticLockingWithEntryProcessor(hz, sampleBatch2);
+
+//		optimisticLockingWithMapStoreHack(hz, sampleBatch1);
+//		optimisticLockingWithMapStoreHack(hz, sampleBatch2);
 
 		System.exit(0);
 	}
 
-	private static void optimisticLockingWithMapStoreHack(HazelcastInstance hz) {
+	private static void optimisticLockingWithEntryProcessor(HazelcastInstance hz, Map<String, Position> batch) {
+		IMap<String, Position> positions = hz.getMap("Positions");
+		positions.executeOnKeys(batch.keySet(), new VersioningEntryProcessor<>(batch));
+	}
+
+	private static void optimisticLockingWithMapStoreHack(HazelcastInstance hz, Map<String, Position> batch) {
 		IMap<String, Position> positions = hz.getMap("PositionsWithMapStore");
 		try {
-			positions.putAll(Map.of(
-					"ACCOUNT1", new Position(1),
-					"ACCOUNT2", new Position(2),
-					"ACCOUNT3", new Position(1)
-			));
-
-			positions.putAll(Map.of(
-					"ACCOUNT1", new Position(2),
-					"ACCOUNT2", new Position(2),
-					"ACCOUNT3", new Position(2)
-			));
-		} catch (RuntimeException e) {
-			log.error("Failed to put batch", e);
+			positions.putAll(batch);
+		} catch (OptimisticLockingException e) {
+			log.info("Optimistic locking failure: " + e.getLocalizedMessage());
 		}
 		log.info("Positions: " + positions.values());
 	}
 
-	interface Versioned {
-		int version();
-	}
-
 	record Position(int version) implements Serializable, Versioned {
-	}
-
-	static class VersioningMapStore extends MapStoreAdapter<Object, Versioned> implements MapLoaderLifecycleSupport {
-		private IMap<Object, Versioned> map;
-
-		@Override
-		public void init(HazelcastInstance hazelcastInstance, Properties properties, String mapName) {
-			map = hazelcastInstance.getMap(mapName);
-		}
-
-		@Override
-		public void store(Object key, Versioned value) {
-			Versioned oldValue = map.get(key);
-			if (oldValue != null && value.version() <= oldValue.version()) {
-				throw new OptimisticLockingException("Outdated: " + value + ", version <= " + oldValue.version());
-			}
-			log.info("store: {}={}", key, value);
-		}
-
-		@Override
-		public void destroy() {
-		}
-	}
-
-	public static class OptimisticLockingException extends RuntimeException implements Serializable {
-		public OptimisticLockingException(String message) {
-			super(message);
-		}
-
-		@Override
-		public synchronized Throwable fillInStackTrace() {
-			return this;
-		}
 	}
 }
