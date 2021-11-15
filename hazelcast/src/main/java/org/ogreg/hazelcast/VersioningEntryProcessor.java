@@ -29,7 +29,7 @@ public class VersioningEntryProcessor<K extends Serializable, V extends Versione
 		} else if (oldValue.version() < newValue.version()) {
 			entry.setValue(newValue); // The new version is larger than the old one - updating
 		} else {
-			log.info("Outdated: {}, version <= {}", newValue, oldValue.version());
+			log.debug("Outdated: {}, version <= {}", newValue, oldValue.version());
 		}
 		return null;
 	}

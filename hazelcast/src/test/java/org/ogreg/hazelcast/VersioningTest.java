@@ -12,13 +12,19 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.ogreg.hazelcast.VersioningMapStore.OptimisticLockingException;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
 public class VersioningTest {
+	private static final int ITERATIONS = 1000;
+	private static final int BATCH_SIZE = 100;
+
 	private static HazelcastInstance node1;
 	private static HazelcastInstance node2;
 	private static HazelcastInstance client;
@@ -33,6 +39,8 @@ public class VersioningTest {
 			"ACCOUNT2", new Position(1),
 			"ACCOUNT3", new Position(2)
 	);
+	private final List<Map<String, Position>> randomBatches = IntStream.range(0, ITERATIONS)
+			.mapToObj(i -> randomBatch(BATCH_SIZE)).toList();
 
 	@BeforeAll
 	public static void beforeAll() {
@@ -77,6 +85,21 @@ public class VersioningTest {
 	}
 
 	@Test
+	void versioningMapStorePerformance() {
+		IMap<String, Position> positions = client.getMap("PositionsWithMapStore");
+		long before = System.currentTimeMillis();
+		for (Map<String, Position> batch : randomBatches) {
+			try {
+				positions.putAll(batch);
+			} catch (OptimisticLockingException e) {
+				// Ignore
+			}
+		}
+		long duration = System.currentTimeMillis() - before;
+		System.out.printf("MapStore throughput: %d/s%n", ITERATIONS * BATCH_SIZE * 1000L / duration);
+	}
+
+	@Test
 	void versioningEntryProcessorCorrectness() {
 		IMap<String, Position> positions = client.getMap("Positions");
 		positions.executeOnKeys(sampleBatch1.keySet(), new VersioningEntryProcessor<>(sampleBatch1));
@@ -89,9 +112,29 @@ public class VersioningTest {
 				new Position(2));
 	}
 
+	@Test
+	void versioningEntryProcessorPerformance() {
+		IMap<String, Position> positions = client.getMap("PositionsWithMapStore");
+		long before = System.currentTimeMillis();
+		for (Map<String, Position> batch : randomBatches) {
+			positions.executeOnKeys(batch.keySet(), new VersioningEntryProcessor<>(batch));
+		}
+		long duration = System.currentTimeMillis() - before;
+		System.out.printf("EntryProcessor throughput: %d/s%n", ITERATIONS * BATCH_SIZE * 1000L / duration);
+	}
+
 	@AfterAll
 	public static void afterAll() {
 		node1.shutdown();
 		node2.shutdown();
+	}
+
+	private Map<String, Position> randomBatch(int count) {
+		ThreadLocalRandom rnd = ThreadLocalRandom.current();
+		Map<String, Position> batch = new HashMap<>();
+		for (int i = 0; i < count; i++) {
+			batch.put("ACCOUNT" + i, new Position(rnd.nextInt(100)));
+		}
+		return batch;
 	}
 }

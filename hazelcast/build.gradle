@@ -11,7 +11,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.hazelcast:hazelcast:4.2.2'
+    implementation 'com.hazelcast:hazelcast:5.0'
     implementation 'ch.qos.logback:logback-classic:1.2.6'
 
     testImplementation "org.assertj:assertj-core:3.21.0"

@@ -26,7 +26,7 @@ class VersioningMapStore extends MapStoreAdapter<Object, Versioned> implements M
 		if (oldValue != null && value.version() <= oldValue.version()) {
 			throw new OptimisticLockingException("Outdated: " + value + ", version <= " + oldValue.version());
 		}
-		log.info("store: {}={}", key, value);
+		log.debug("store: {}={}", key, value);
 	}
 
 	@Override
@@ -36,6 +36,11 @@ class VersioningMapStore extends MapStoreAdapter<Object, Versioned> implements M
 	public static class OptimisticLockingException extends RuntimeException implements Serializable {
 		public OptimisticLockingException(String message) {
 			super(message);
+		}
+
+		@Override
+		public synchronized Throwable fillInStackTrace() {
+			return this;
 		}
 	}
 }
