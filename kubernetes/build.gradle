@@ -1,0 +1,34 @@
+plugins {
+    id 'io.micronaut.application' version "$micronautPluginVersion"
+}
+
+version = "0.1"
+group = "org.ogreg"
+
+repositories {
+    mavenCentral()
+}
+
+micronaut {
+    version(micronautVersion)
+    runtime("netty")
+    testRuntime("junit5")
+    processing {
+        incremental(true)
+        annotations("org.ogreg.*")
+    }
+}
+
+dependencies {
+    implementation "io.micronaut:micronaut-http-server-netty"
+    runtimeOnly "ch.qos.logback:logback-classic"
+}
+
+application {
+    mainClass.set("org.ogreg.kubernetes.Application")
+}
+
+java {
+    sourceCompatibility = '17'
+    targetCompatibility = '17'
+}
