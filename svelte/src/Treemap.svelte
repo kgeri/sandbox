@@ -10,7 +10,6 @@
 
     function onSelectNode(node) {
         selected = node;
-        console.log(node);
     }
 
     function tile(node, x0, y0, x1, y1) {
@@ -32,26 +31,30 @@
         );
 
     const root = tm(data);
-    const extents = tweened(undefined, {
+    let selected = root;
+
+    const translation = tweened(undefined, {
         easing: cubicOut,
         duration: 500,
     });
 
-    let selected = root;
-
-    $: $extents = {
-        x: selected.x0,
-        y: selected.y0,
-        width: selected.x1 - selected.x0,
-        height: selected.y1 - selected.y0,
+    $: $translation = {
+        tx: root.x0 - selected.x0,
+        ty: root.y0 - selected.y0,
+        sw: (root.x1 - root.x0) / (selected.x1 - selected.x0),
+        sh: (root.y1 - root.y0) / (selected.y1 - selected.y0),
+        width: width,
+        height: height,
     };
 </script>
 
-<svg
-    {width}
-    {height}
-    viewBox="{$extents.x} {$extents.y} {$extents.width} {$extents.height}"
-    preserveAspectRatio="none"
+<div
+    style="width: {width}px; height: {height}px; position: relative; overflow: hidden;"
 >
-    <TreeNode node={root} {selected} {onSelectNode} />
-</svg>
+    <TreeNode
+        node={root}
+        translation={$translation}
+        {selected}
+        {onSelectNode}
+    />
+</div>
