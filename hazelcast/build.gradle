@@ -12,6 +12,7 @@ repositories {
 
 dependencies {
     implementation 'com.hazelcast:hazelcast:5.1.1'
+    implementation 'com.hazelcast:hazelcast-sql:5.1.1'
     implementation 'ch.qos.logback:logback-classic:1.2.11'
     implementation 'net.bytebuddy:byte-buddy:1.12.10' // For QueryStatisticsPlugin
     implementation 'net.bytebuddy:byte-buddy-agent:1.12.10' // For QueryStatisticsPlugin
