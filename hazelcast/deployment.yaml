@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-cluster
+  namespace: sandbox
+spec:
+  type: ClusterIP
+  clusterIP: None
+  selector:
+    app: hazelcast-sandbox
+  ports:
+    - port: 5701
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hazelcast-sandbox
+  namespace: sandbox
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: hazelcast-sandbox
+  template:
+    metadata:
+      labels:
+        app: hazelcast-sandbox
+    spec:
+      containers:
+        - name: hazelcast-sandbox
+          image: srvu:5000/hazelcast-sandbox
+          imagePullPolicy: Always
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "10m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          ports:
+            - containerPort: 5701

@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'com.google.cloud.tools.jib' version '3.2.1'
 }
 
 group 'org.ogreg'
@@ -24,4 +25,13 @@ dependencies {
 
 test {
     useJUnitPlatform()
+}
+
+jib {
+    from.image = 'openjdk:17-alpine'
+    to.image = 'srvu:5000/hazelcast-sandbox'
+    container {
+        mainClass = 'org.ogreg.hazelcast.HazelcastKubernetes'
+        jvmFlags = ['-XX:+UseSerialGC', '-XX:MaxRAMPercentage=75']
+    }
 }
