@@ -73,4 +73,4 @@ spec:
         - name: data-vol
           hostPath:
             path: /tmp/mongo
-            type: Directory
+            type: DirectoryOrCreate

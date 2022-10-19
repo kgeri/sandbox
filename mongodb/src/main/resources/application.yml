@@ -1,0 +1,2 @@
+mongodb:
+  uri: mongodb://root:TODO@${MONGO_SERVICE_HOST}:${MONGO_SERVICE_PORT}/admin

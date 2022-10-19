@@ -1,5 +1,5 @@
 plugins {
-    id 'java'
+    id 'io.micronaut.application' version '3.6.2'
     id 'com.google.cloud.tools.jib' version '3.2.1'
 }
 
@@ -12,12 +12,25 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.mongodb:mongo-java-driver:3.12.11'
-    implementation 'ch.qos.logback:logback-classic:1.4.1'
+    annotationProcessor 'io.micronaut.data:micronaut-data-document-processor'
+
+    implementation 'io.micronaut:micronaut-http-server-netty'
+    implementation 'io.micronaut.data:micronaut-data-mongodb'
+
+    runtimeOnly 'ch.qos.logback:logback-classic'
+    runtimeOnly 'org.mongodb:mongodb-driver-sync'
 
     testImplementation 'org.assertj:assertj-core:3.23.1'
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.0'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.0'
+}
+
+micronaut {
+    version = '3.7.2'
+    runtime('netty')
+    testRuntime('junit5')
+    processing {
+        incremental(false)
+        annotations('org.ogreg.*')
+    }
 }
 
 test {
@@ -26,9 +39,13 @@ test {
 
 jib {
     from.image = 'openjdk:17-alpine'
-    to.image = 'srvu:5000/mongodb-sandbox'
+    to.image = 'mongo-server:latest'
     container {
-        mainClass = 'org.ogreg.hazelcast.HazelcastKubernetes'
-        jvmFlags = ['-XX:+UseSerialGC', '-XX:MaxRAMPercentage=75']
+        mainClass = 'org.ogreg.mongo.MongoServer'
+        jvmFlags = [
+                '-Xmx1G',
+                '-XX:+UseSerialGC',
+                '-XX:MaxRAMPercentage=75'
+        ]
     }
 }
