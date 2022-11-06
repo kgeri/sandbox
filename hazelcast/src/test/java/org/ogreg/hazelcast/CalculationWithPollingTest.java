@@ -20,8 +20,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class CalculationTest {
-	private static final Logger log = LoggerFactory.getLogger(CalculationTest.class);
+public class CalculationWithPollingTest {
+	private static final Logger log = LoggerFactory.getLogger(CalculationWithPollingTest.class);
 
 	private static HazelcastInstance node1;
 	private static HazelcastInstance node2;
@@ -46,7 +46,7 @@ public class CalculationTest {
 		c.getProperties().put("hazelcast.wait.seconds.before.join", "0");
 
 		HazelcastInstance hz = Hazelcast.newHazelcastInstance(c);
-		new CalculatorService<CalculationTask>(hz, "WorkQueue", 2);
+		new CalculatorServiceWithPolling<CalculationTask>(hz, "WorkQueue", 2, 100);
 		return hz;
 	}
 
@@ -63,7 +63,7 @@ public class CalculationTest {
 		}
 
 		assertThat(VerifiedCalculationTask.calculatedSequences).containsExactlyInAnyOrder(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
-		assertThat(VerifiedCalculationTask.calculationCount).hasValueLessThan(1000 / 2);
+		assertThat(VerifiedCalculationTask.calculationCount).hasValueLessThan(100 * 10 / 2);
 		log.info("Redundancy: {}x", VerifiedCalculationTask.calculationCount.doubleValue() / 10.0);
 	}
 

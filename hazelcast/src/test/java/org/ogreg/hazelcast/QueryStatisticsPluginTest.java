@@ -3,7 +3,6 @@ package org.ogreg.hazelcast;
 import com.hazelcast.client.HazelcastClient;
 import com.hazelcast.client.config.ClientConfig;
 import com.hazelcast.config.Config;
-import com.hazelcast.config.MapStoreConfig;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.map.IMap;
@@ -59,12 +58,7 @@ class QueryStatisticsPluginTest {
 		c.setClusterName("testcluster");
 		c.getProperties().put("hazelcast.logging.type", "slf4j");
 
-		MapStoreConfig msc = c.getMapConfig("PositionsWithMapStore").getMapStoreConfig();
-		msc.setEnabled(true);
-		msc.setImplementation(new VersioningMapStore());
-
 		HazelcastInstance hz = Hazelcast.newHazelcastInstance(c);
-		new CalculatorService<CalculationTask>(hz, 2);
 		return hz;
 	}
 }

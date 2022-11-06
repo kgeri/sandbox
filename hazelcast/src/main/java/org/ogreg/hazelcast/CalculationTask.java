@@ -10,7 +10,7 @@ public class CalculationTask implements Runnable, PartitionAware<String>, Serial
 	private static final Logger log = LoggerFactory.getLogger(CalculationTask.class);
 
 	private final String name;
-	private final int sequence;
+	protected final int sequence;
 
 	public CalculationTask(String name, int sequence) {
 		this.name = name;
@@ -24,11 +24,16 @@ public class CalculationTask implements Runnable, PartitionAware<String>, Serial
 
 	@Override
 	public void run() {
-		log.info("Executing: {}-{}", name, sequence);
+		log.info("Executing: {}", this);
 		try {
 			Thread.sleep(100);
 		} catch (InterruptedException e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	@Override
+	public String toString() {
+		return name + "-" + sequence;
 	}
 }

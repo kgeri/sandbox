@@ -6,20 +6,22 @@ import com.hazelcast.map.listener.EntryAddedListener;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class CalculatorService<T extends Runnable> {
 	private final IMap<T, Long> workQueue;
-	private final Semaphore available = new Semaphore(1);
 	private final ExecutorService executor;
 
-	public CalculatorService(HazelcastInstance hz, int poolSize) {
-		this.workQueue = hz.getMap("WorkQueue");
+	public CalculatorService(HazelcastInstance hz, String mapName, int poolSize) {
+		this.workQueue = hz.getMap(mapName);
+
+		AtomicInteger threadIndex = new AtomicInteger(0);
 		this.executor = Executors.newFixedThreadPool(poolSize, runnable -> {
-			Thread t = new Thread(runnable, hz.getCluster().getLocalMember().getUuid().toString());
+			Thread t = new Thread(runnable, mapName + "-" + threadIndex.getAndIncrement());
 			t.setDaemon(true);
 			return t;
 		});
+
 		workQueue.addLocalEntryListener((EntryAddedListener<T, Long>) event -> {
 			T task = event.getKey();
 			executor.submit(() -> {
