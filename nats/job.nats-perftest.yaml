@@ -1,0 +1,22 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: nats-perftest
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: nats-perftest
+          image: srvu:5000/nats-perftest
+          imagePullPolicy: Always
+          env:
+            - name: TEST_NAME
+              value: "${TEST_NAME}"
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "1000m"
