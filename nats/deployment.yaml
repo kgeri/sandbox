@@ -40,8 +40,13 @@ spec:
         - name: nats-server
           image: nats
           imagePullPolicy: Always
+          env:
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
           command: [ "nats-server" ]
-          args: [ "--cluster_name", "mynats", "--cluster", "nats://0.0.0.0:6222", "--routes", "nats://mynats.sandbox:6222", "-m", "8222" ]
+          args: [ "--server_name", "$(NODE_NAME)", "--cluster_name", "mynats", "-js", "--cluster", "nats://0.0.0.0:6222", "--routes", "nats://mynats.sandbox:6222", "-m", "8222" ]
           resources:
             requests:
               memory: "128Mi"
