@@ -1,12 +1,7 @@
 package org.ogreg.hazelcast;
 
-import com.hazelcast.client.HazelcastClient;
-import com.hazelcast.client.config.ClientConfig;
-import com.hazelcast.config.Config;
-import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.map.IMap;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -20,34 +15,20 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class CalculationTest {
+public class CalculationTest extends HazelcastTestSupport {
 	private static final Logger log = LoggerFactory.getLogger(CalculationTest.class);
 
-	private static HazelcastInstance node1;
-	private static HazelcastInstance node2;
 	private static HazelcastInstance client;
 
 	@BeforeAll
 	public static void beforeAll() {
-		node1 = startNode();
-		node2 = startNode();
+		HazelcastInstance node1 = startNode("testcluster");
+		HazelcastInstance node2 = startNode("testcluster");
 
-		ClientConfig c = new ClientConfig();
-		c.setClusterName("testcluster");
-		c.getProperties().put("hazelcast.logging.type", "slf4j");
+		new CalculatorService<CalculationTask>(node1, "WorkQueue", 2);
+		new CalculatorService<CalculationTask>(node2, "WorkQueue", 2);
 
-		client = HazelcastClient.newHazelcastClient(c);
-	}
-
-	private static HazelcastInstance startNode() {
-		Config c = new Config();
-		c.setClusterName("testcluster");
-		c.getProperties().put("hazelcast.logging.type", "slf4j");
-		c.getProperties().put("hazelcast.wait.seconds.before.join", "0");
-
-		HazelcastInstance hz = Hazelcast.newHazelcastInstance(c);
-		new CalculatorService<CalculationTask>(hz, "WorkQueue", 2);
-		return hz;
+		client = newClient("testcluster");
 	}
 
 	@Test
@@ -65,12 +46,6 @@ public class CalculationTest {
 		assertThat(VerifiedCalculationTask.calculatedSequences).containsExactlyInAnyOrder(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
 		assertThat(VerifiedCalculationTask.calculationCount).hasValueLessThan(1000 / 2);
 		log.info("Redundancy: {}x", VerifiedCalculationTask.calculationCount.doubleValue() / 10.0);
-	}
-
-	@AfterAll
-	public static void afterAll() {
-		node1.shutdown();
-		node2.shutdown();
 	}
 
 	private static class VerifiedCalculationTask extends CalculationTask {

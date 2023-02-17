@@ -25,28 +25,31 @@ It soon turned out that the public APIs are too limited. So time to dig in :)
 Interesting things I found out along the way:
 
 * There's an awesome little method (used for cache expiration) that does _exactly_ what I
-  need: `com.hazelcast.map.impl.recordstore.Storage.getRandomSamples(int)`
+  need: `com.hazelcast.map.impl.recordstore.Storage.getRandomSamples(int)`. **Unfortunately as of 5.2.2 the solution broke with this**.
 * You can get to it
   via `HazelcastInstanceImpl -> Node -> NodeEngine -> MapService -> MapServiceContext -> PartitionContainer[] -> RecordStore[] -> Store[]` :)
 * You'd think that the ownerships are like `Hazelcast -> IMap[mapName] -...-> partitioned data`, but it's actually
   `Hazelcast -> MapServiceContext -> PartitionContainer[] -> RecordStore[mapName]`
 * This has the interesting consequence of Hazelcast _not distinguishing between owned and backup entries_ below the `MapServiceContext` level. The
   `RecordStore` has both!
-* The way to find out whether something is currently (!) owned or a backup is by looking at `MapServiceContext.getOrInitCachedMemberPartitions()`,
-  which is essentially a `BitSet` (nice!). It's not actually the _entries_ that are migrated when nodes come and go, but rather entire `Partitions`...
+* The way to find out whether something is currently (!) owned or a backup is by looking at `InternalPartitionService.isPartitionOwner`,
+* It's not actually the _entries_ that are migrated when nodes come and go, but rather entire `Partitions`...
   in retrospect this makes a lot of sense!
+* As of 5.2.2, I found a simpler way which involves `RecordStore.iterator`. This calls to `StorageImpl.mutationTolerantIterator`, and looks safe
+  enough for my purpose (which is to keep hold of an iterator on the `dispatcher` thread until the `tasks` queue frees up - see below)
 
 So the scheme I came up with is:
 
 * Create a `workQueue` for the tasks (an `IMap` keyed by whatever partition key you like)
-* Start a single `dispatcher` thread per node, that does the polling (calling `Storage.getRandomSamples(int)` across all `RecordStore`s)
+* Start a single `dispatcher` thread per node, that does the polling (calling `RecordStore.iterator`)
     * First this checks whether the given partitionId (the index of the `PartitionContainer` array) is ours or not
-      with `getOrInitCachedMemberPartitions()`
-    * Then it does the `getRandomSamples` trick, feeding the entries into an `ArrayBlockingQueue` **with a fixed capacity**
-    * This means the dispatcher will block until the workers do the work
+      using `InternalPartitionService.isPartitionOwner`
+    * Then it gets the `RecordStore`, and just to avoid creating/using objects, it first checks whether it's empty
+    * Then it traverses `RecordStore.iterator`, feeding the entries into an `ArrayBlockingQueue` **with a fixed capacity** (N, `worker` thread count)
+    * If there are more entries, then the dispatcher will block until the workers do the work
     * The size of this dispatch queue will be tiny (which means we're okay to lose it if the node goes down - and on startup we'd automatically poll
       again anyway)
-    * If the dispatcher didn't find anything, it goes to sleep for a bit (to avoid spinning on the `Store`)
+    * If the dispatcher didn't find anything, it goes to sleep for a bit (to avoid spinning on the `RecordStore`)
 * Start N `worker` queues, which just do a `BlockingQueue.take()` in an infinite loop, and of course remove the task from the `IMap` before they start
   calculating it
 
@@ -60,4 +63,4 @@ Benefits:
 
 Drawbacks:
 
-* Relies on tons of internal API that are also very deep and might change anytime :(
+* Relies on internal API that is also very deep and might change anytime :(

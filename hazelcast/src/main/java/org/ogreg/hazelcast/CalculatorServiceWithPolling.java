@@ -1,17 +1,22 @@
 package org.ogreg.hazelcast;
 
-import com.hazelcast.core.EntryView;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.instance.impl.HazelcastInstanceProxy;
+import com.hazelcast.internal.partition.InternalPartitionService;
+import com.hazelcast.internal.serialization.Data;
+import com.hazelcast.internal.serialization.SerializationService;
 import com.hazelcast.map.IMap;
 import com.hazelcast.map.impl.MapService;
 import com.hazelcast.map.impl.MapServiceContext;
 import com.hazelcast.map.impl.PartitionContainer;
+import com.hazelcast.map.impl.record.Record;
 import com.hazelcast.map.impl.recordstore.RecordStore;
 import com.hazelcast.spi.impl.NodeEngineImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Iterator;
+import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
@@ -22,8 +27,9 @@ public class CalculatorServiceWithPolling<T extends Runnable> {
 
 	private final int dispatchSleepMs;
 	private final IMap<T, Long> map;
+	private final SerializationService serializationService;
+	private final InternalPartitionService partitionService;
 	private final MapServiceContext mapServiceContext;
-	private final RecordStore<?>[] recordStores;
 	private final BlockingQueue<T> tasks;
 
 	public CalculatorServiceWithPolling(HazelcastInstance hz, String mapName, int poolSize, int dispatchSleepMs) {
@@ -32,8 +38,9 @@ public class CalculatorServiceWithPolling<T extends Runnable> {
 
 		NodeEngineImpl nodeEngine = ((HazelcastInstanceProxy) hz).getOriginal().node.getNodeEngine();
 		MapService mapService = nodeEngine.getService(MapService.SERVICE_NAME);
+		this.serializationService = nodeEngine.getSerializationService();
+		this.partitionService = nodeEngine.getPartitionService();
 		this.mapServiceContext = mapService.getMapServiceContext();
-		this.recordStores = getLocalRecordStores(mapServiceContext, mapName);
 
 		this.tasks = new ArrayBlockingQueue<>(poolSize);
 		String memberUuid = hz.getCluster().getLocalMember().getUuid().toString();
@@ -41,15 +48,6 @@ public class CalculatorServiceWithPolling<T extends Runnable> {
 		for (int i = 0; i < poolSize; i++) {
 			startWorker(format("%s-%s-%d", memberUuid, mapName, i), this::calculate);
 		}
-	}
-
-	private RecordStore<?>[] getLocalRecordStores(MapServiceContext mapServiceContext, String mapName) {
-		PartitionContainer[] partitionContainers = mapServiceContext.getPartitionContainers();
-		RecordStore<?>[] recordStores = new RecordStore[partitionContainers.length];
-		for (int i = 0; i < partitionContainers.length; i++) {
-			recordStores[i] = partitionContainers[i].getRecordStore(mapName);
-		}
-		return recordStores;
 	}
 
 	private void startWorker(String threadName, InterruptableRunnable block) {
@@ -67,22 +65,29 @@ public class CalculatorServiceWithPolling<T extends Runnable> {
 		t.start();
 	}
 
+	@SuppressWarnings({"unchecked", "rawtypes"})
 	private void dispatch() throws InterruptedException {
 		boolean foundTasks = false;
-		for (int i = 0; i < recordStores.length; i++) {
 
-			// Each Hazelcast Node contains all partitions for all maps. Backups are stored the same way as local entries, and we as partition
-			// ownership might shift around because of migrations, we need to constantly check whether a particular partition is ours or not.
-			if (!mapServiceContext.getOrInitCachedMemberPartitions().contains(i)) {
-				// This partition is currently not ours, skipping
+		PartitionContainer[] partitions = mapServiceContext.getPartitionContainers();
+		for (PartitionContainer partition : partitions) {
+
+			// Each Hazelcast Node contains all partitions for all maps. Backups are stored the same way as local entries, and as ownership might shift 
+			// around because of migrations, we need to constantly check whether a particular partition is currently ours or not.
+			if (!partitionService.isPartitionOwner(partition.getPartitionId())) {
 				continue;
 			}
 
-			@SuppressWarnings("unchecked")
-			Iterable<EntryView<?, ?>> it = recordStores[i].getStorage().getRandomSamples(tasks.remainingCapacity());
-			for (EntryView<?, ?> sample : it) {
-				@SuppressWarnings("unchecked")
-				T task = (T) sample.getKey();
+			// Digging into Hazelcast internals for an efficient way of iterating over the local keys
+			RecordStore store = partition.getRecordStore(map.getName());
+			if (store.isEmpty()) {
+				continue;
+			}
+
+			Iterator<Map.Entry<Data, Record>> it = store.iterator();
+			while (it.hasNext()) {
+				Data keyData = it.next().getKey();
+				T task = serializationService.toObject(keyData);
 				foundTasks = true;
 				tasks.put(task);
 			}

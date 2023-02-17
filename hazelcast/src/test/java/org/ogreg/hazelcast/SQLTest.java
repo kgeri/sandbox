@@ -1,10 +1,7 @@
 package org.ogreg.hazelcast;
 
-import com.hazelcast.client.HazelcastClient;
-import com.hazelcast.client.config.ClientConfig;
 import com.hazelcast.config.Config;
 import com.hazelcast.config.NetworkConfig;
-import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.map.IMap;
 import com.hazelcast.sql.SqlService;
@@ -19,45 +16,28 @@ import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.IntFunction;
 
-public class SQLTest {
+public class SQLTest extends HazelcastTestSupport {
 	private static final Logger log = LoggerFactory.getLogger(SQLTest.class);
 
-	public static void main(String[] args) {
-		HazelcastInstance n1 = startNode();
-		HazelcastInstance n2 = startNode();
-		HazelcastInstance n3 = startNode();
-
-		createMapping(n1);
-
-		HazelcastInstance client = startClient();
-		fillWithData(client);
-		query(client);
-
-		client.shutdown();
-		n3.shutdown();
-		n2.shutdown();
-		n1.shutdown();
-	}
-
-	private static HazelcastInstance startNode() {
-		Config c = new Config();
-		c.setClusterName("testcluster");
-		c.getProperties().put("hazelcast.logging.type", "slf4j");
-
+	private static void jetConfigurer(Config c) {
 		NetworkConfig nc = c.getNetworkConfig();
 		nc.getJoin().getMulticastConfig().setMulticastTimeoutSeconds(1);
 
 		c.getJetConfig().setEnabled(true);
-
-		return Hazelcast.newHazelcastInstance(c);
 	}
 
-	private static HazelcastInstance startClient() {
-		ClientConfig c = new ClientConfig();
-		c.setClusterName("testcluster");
-		c.getProperties().put("hazelcast.logging.type", "slf4j");
+	public static void main(String[] args) {
+		HazelcastInstance n1 = startNode("testcluster", SQLTest::jetConfigurer);
+		startNode("testcluster", SQLTest::jetConfigurer);
+		startNode("testcluster", SQLTest::jetConfigurer);
 
-		return HazelcastClient.newHazelcastClient(c);
+		createMapping(n1);
+
+		HazelcastInstance client = newClient("testcluster");
+		fillWithData(client);
+		query(client);
+
+		terminateAll();
 	}
 
 	private static void createMapping(HazelcastInstance hz) {

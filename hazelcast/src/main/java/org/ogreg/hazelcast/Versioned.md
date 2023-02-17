@@ -40,6 +40,9 @@ See also [versioningEntryProcessorCorrectness()](../../../../../test/java/org/og
 
 ## Option 2: MapStore
 
+**IMPORTANT**: as of 5.2.2, below is not a feasible solution, because it deadlocks on `IMap.get` (which kind of makes sense, because we're accessing
+a map entry on the same key we're currently trying to update). Well it was an ugly hack anyway. I've put its test on `@Disabled`.
+
 But `putAll` is so nice... can't we just use that, and make the nodes aware of versioning somehow?
 
 Reading the Hazelcast code, we can employ a devilish hack: `MapListener`s run out-of-band (after the `put`, on a separate thread), but custom `MapStore`
