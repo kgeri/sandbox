@@ -1,7 +1,5 @@
 package org.ogreg.hazelcast;
 
-import com.hazelcast.client.HazelcastClient;
-import com.hazelcast.client.config.ClientConfig;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.map.IMap;
 import org.junit.jupiter.api.BeforeAll;
@@ -30,12 +28,27 @@ public class CalculationWithPollingTest extends HazelcastTestSupport {
 		new CalculatorServiceWithPolling<CalculationTask>(node1, "WorkQueue", 2, 100);
 		new CalculatorServiceWithPolling<CalculationTask>(node2, "WorkQueue", 2, 100);
 
+		new CalculatorServiceWithPollingV2<CalculationTask>(node1, "WorkQueueV2", 2, 100);
+		new CalculatorServiceWithPollingV2<CalculationTask>(node2, "WorkQueueV2", 2, 100);
+
 		client = newClient("testcluster");
 	}
 
 	@Test
 	public void calculationsAreDeDuplicatedAndDistributedByPartitionKey() throws InterruptedException {
-		IMap<CalculationTask, Long> workQueue = client.getMap("WorkQueue");
+		calculationsAreDeDuplicatedAndDistributedByPartitionKey("WorkQueue");
+	}
+
+	@Test
+	public void calculationsAreDeDuplicatedAndDistributedByPartitionKeyV2() throws InterruptedException {
+		calculationsAreDeDuplicatedAndDistributedByPartitionKey("WorkQueueV2");
+	}
+
+	private void calculationsAreDeDuplicatedAndDistributedByPartitionKey(String workQueueName) throws InterruptedException {
+		VerifiedCalculationTask.calculatedSequences.clear();
+		VerifiedCalculationTask.calculationCount.set(0);
+		
+		IMap<CalculationTask, Long> workQueue = client.getMap(workQueueName);
 		Random rnd = new Random(0);
 		for (int i = 0; i < 1000; i++) {
 			workQueue.put(new VerifiedCalculationTask("test", rnd.nextInt(10)), System.currentTimeMillis());
