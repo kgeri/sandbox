@@ -1,0 +1,25 @@
+plugins {
+    id 'java'
+}
+
+group 'org.ogreg'
+version '1.0-SNAPSHOT'
+sourceCompatibility = 17
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'com.esotericsoftware:kryo:5.4.0'
+    implementation 'org.msgpack:jackson-dataformat-msgpack:0.9.3'
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.14.2' // For LocalDate / ZonedDateTime
+
+    testImplementation 'org.assertj:assertj-core:3.24.2'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.2'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.2'
+}
+
+test {
+    useJUnitPlatform()
+}
