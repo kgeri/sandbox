@@ -1,6 +1,6 @@
 # Micronaut Hello World
 
-| Property              | Java   |
+| Property              | Value  |
 |-----------------------|--------|
 | Version               | 3.9.1  |
 | Footprint             | 16 MB  |
