@@ -28,6 +28,7 @@ public Object logInvocation(InvocationContext ctx) throws Exception {
 }
 ```
 * ...and then (based on this of course), fully guessed the `@AroundConstruct` one
+* Correctly guessed that I want an `elves.forEach(System.out::println);`
 
 ## Negatives
 
@@ -54,6 +55,7 @@ As of now, FFmpeg does not fully support the H.266/VVC codec. This is because H.
 * Then after some time, I tried again, and it finished the sentence with `...it's not a "normal" plugin, but a [buildscript dependency](https://quarkus.io/guides/gradle-tooling#using-the-quarkus-gradle-plugin)`. Which is [absolute bullshit](https://plugins.gradle.org/plugin/io.quarkus).
 * Wrote `Quarkus reserves the 'quarkus.' and 'QUARKUS_' prefixes for its own configuration, plus `, Suggested: `'java.', 'sun.', 'file.', 'user.', 'os.' and 'path.separator'`. You guessed right. Utter bullshit.
 * Wrote: `This is achieved via code generation during build time (similar to Micronaut). `, Suggested: `This means that the build time is **much** longer than with Spring/Micronaut.`. Wrong again.
+* Guessing wrong URLs, eg.: * `@IfBuildProperty` can be used to [conditionally enable beans based on build properties](https://quarkus.io/guides/cdi-reference#enable_build_property)
 
 ### Pushing said silly thing
 
@@ -83,4 +85,5 @@ As of now, FFmpeg does not fully support the H.266/VVC codec. This is because H.
 * Typed `@Inject`, suggested completion: `@Inject is replaced with @Inject (no surprise here)` - seriously? :)
 * Suggested a code completion for an enumeration, generated absolute bullshit (`@ApplicationScoped is the default scope but it's not the same as Micronaut's @Singleton - it's more like @Prototype (new instance per injection point)`)
 * Suggested Markdown syntax in a .sh file (and even a syntatcically incorrect one)
+* I was working on a `Stream<Elf>`, and at the point of `.collect(`, it suggested `.collect(ElfCollector.toElfList())`, a completely made up class and method name... WTF?
 
