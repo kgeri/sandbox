@@ -1,5 +1,6 @@
 package org.ogreg.graphs;
 
+import com.google.common.graph.Graph;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.Scene;
@@ -19,7 +20,7 @@ public class VisualizationApp extends Application {
 	}
 
 	private final Pane canvas = new Pane();
-	private final Graph graph = Samples.simpleGraph();
+	private final Graph<Node> graph = Samples.simpleGraph();
 
 	@Override
 	public void start(Stage stage) {
@@ -51,7 +52,7 @@ public class VisualizationApp extends Application {
 
 	private void initView() {
 		graph.edges().stream()
-				.map(EdgeView::new)
+				.map(ep -> new EdgeView(ep.source(), ep.target()))
 				.forEach(ev -> canvas.getChildren().add(ev));
 		graph.nodes().stream()
 				.map(NodeView::new)
@@ -62,10 +63,10 @@ public class VisualizationApp extends Application {
 		for (javafx.scene.Node child : canvas.getChildren()) {
 			switch (child) {
 				case EdgeView ev -> {
-					ev.setStartX(ev.edge.from().getX());
-					ev.setStartY(ev.edge.from().getY());
-					ev.setEndX(ev.edge.to().getX());
-					ev.setEndY(ev.edge.to().getY());
+					ev.setStartX(ev.source.getX());
+					ev.setStartY(ev.source.getY());
+					ev.setEndX(ev.target.getX());
+					ev.setEndY(ev.target.getY());
 				}
 				case NodeView nv -> {
 					nv.setCenterX(nv.node.getX());
@@ -88,10 +89,12 @@ public class VisualizationApp extends Application {
 	}
 
 	static class EdgeView extends Line {
-		private final Edge edge;
+		private final Node source;
+		private final Node target;
 
-		EdgeView(Edge edge) {
-			this.edge = edge;
+		EdgeView(Node source, Node target) {
+			this.source = source;
+			this.target = target;
 			setStrokeWidth(2);
 		}
 	}

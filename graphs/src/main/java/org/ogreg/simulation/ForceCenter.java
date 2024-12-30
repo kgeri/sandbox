@@ -3,13 +3,13 @@ package org.ogreg.simulation;
 import java.util.Collection;
 
 // Based on https://github.com/d3/d3-force/blob/main/src/center.js
-public class ForceCenter<B extends Body2D> implements Force {
-	private final Collection<B> bodies;
+public class ForceCenter implements Force {
+	private final Collection<? extends Body2D> bodies;
 	private final double cx;
 	private final double cy;
 	private double strength = 1.0;
 
-	public ForceCenter(Collection<B> bodies, double cx, double cy) {
+	public ForceCenter(Collection<? extends Body2D> bodies, double cx, double cy) {
 		this.bodies = bodies;
 		this.cx = cx;
 		this.cy = cy;
@@ -20,7 +20,7 @@ public class ForceCenter<B extends Body2D> implements Force {
 		double sx = 0.0, sy = 0.0;
 		int n = bodies.size();
 
-		for (B b : bodies) {
+		for (Body2D b : bodies) {
 			sx += b.x;
 			sy += b.y;
 		}
@@ -28,7 +28,7 @@ public class ForceCenter<B extends Body2D> implements Force {
 		double dx = (sx / n - cx) * strength;
 		double dy = (sy / n - cy) * strength;
 
-		for (B b : bodies) {
+		for (Body2D b : bodies) {
 			b.x -= dx;
 			b.y -= dy;
 		}

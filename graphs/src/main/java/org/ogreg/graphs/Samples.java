@@ -1,31 +1,36 @@
 package org.ogreg.graphs;
 
-import java.util.List;
+import com.google.common.graph.Graph;
+import com.google.common.graph.GraphBuilder;
+import com.google.common.graph.MutableGraph;
 
 abstract class Samples {
 
-	static Graph simpleGraph() {
+	static Graph<Node> simpleGraph() {
 		Node n1 = new Node(300, 400);
 		Node n2 = new Node(100, 200);
 		Node n3 = new Node(50, 450);
 		Node n4 = new Node(200, 200);
 		Node n5 = new Node(400, 300);
 		Node n6 = new Node(500, 100);
-		List<Node> nodes = List.of(
-				n1, n2, n3, n4, n5, n6
-		);
 
-		List<Edge> edges = List.of(
-				new Edge(n1, n2),
-				new Edge(n2, n3),
-				new Edge(n3, n4),
-				new Edge(n1, n3),
-				new Edge(n2, n4),
-				new Edge(n4, n5),
-				new Edge(n3, n6),
-				new Edge(n6, n1)
-		);
+		MutableGraph<Node> g = GraphBuilder.directed().build();
+		g.addNode(n1);
+		g.addNode(n2);
+		g.addNode(n3);
+		g.addNode(n4);
+		g.addNode(n5);
+		g.addNode(n6);
 
-		return new Graph(nodes, edges);
+		g.putEdge(n1, n2);
+		g.putEdge(n2, n3);
+		g.putEdge(n3, n4);
+		g.putEdge(n1, n3);
+		g.putEdge(n2, n4);
+		g.putEdge(n4, n5);
+		g.putEdge(n3, n6);
+		g.putEdge(n6, n1);
+
+		return g;
 	}
 }
