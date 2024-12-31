@@ -20,7 +20,7 @@ public class VisualizationApp extends Application {
 	}
 
 	private final Pane canvas = new Pane();
-	private final Graph<Node> graph = Samples.simpleGraph();
+	private final Graph<Node> graph = Samples.randomComplexGraph();
 
 	@Override
 	public void start(Stage stage) {
@@ -28,7 +28,7 @@ public class VisualizationApp extends Application {
 		updateViewCoordinates();
 
 		stage.setTitle("Force-Directed Graph Visualization");
-		stage.setScene(new Scene(canvas, 800, 600));
+		stage.setScene(new Scene(canvas, 1280, 1024));
 		stage.centerOnScreen();
 		stage.show();
 

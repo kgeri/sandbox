@@ -7,12 +7,13 @@ public class ForceCenter implements Force {
 	private final Collection<? extends Body2D> bodies;
 	private final double cx;
 	private final double cy;
-	private double strength = 1.0;
+	private final double strength;
 
-	public ForceCenter(Collection<? extends Body2D> bodies, double cx, double cy) {
+	public ForceCenter(Collection<? extends Body2D> bodies, double cx, double cy, double strength) {
 		this.bodies = bodies;
 		this.cx = cx;
 		this.cy = cy;
+		this.strength = strength;
 	}
 
 	@Override

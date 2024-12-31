@@ -28,6 +28,9 @@ public class ForceLink implements Force {
 			double x = t.x + t.vx - s.x - s.vx;
 			double y = t.y + t.vy - s.y - s.vy;
 
+			if (x == 0) x = RandomUtil.jiggle();
+			if (y == 0) y = RandomUtil.jiggle();
+
 			double l = Math.sqrt(x * x + y * y);
 			l = (l - distance) / l * alpha * strength;
 			x *= l;

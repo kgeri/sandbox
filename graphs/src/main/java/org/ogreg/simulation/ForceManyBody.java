@@ -22,13 +22,17 @@ public class ForceManyBody implements Force {
 				double x = t.x + t.vx - s.x - s.vx;
 				double y = t.y + t.vy - s.y - s.vy;
 
+				// Randomize direction if coincident
+				if (x == 0) x = RandomUtil.jiggle();
+				if (y == 0) y = RandomUtil.jiggle();
+
 				double l = x * x + y * y;
+				if (l < 1.0) l = Math.sqrt(l); // Limit forces for very close nodes
+				
 				double w = strength * alpha / l;
 
 				t.vx += x * w;
 				t.vy += y * w;
-				s.vx -= x * w;
-				s.vy -= y * w;
 			}
 		}
 	}

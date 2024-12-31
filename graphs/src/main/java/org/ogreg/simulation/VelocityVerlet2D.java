@@ -9,7 +9,7 @@ import java.util.List;
  *
  * @param <B>
  */
-public class VelocityVerlet2D<B extends Body2D> {
+public class VelocityVerlet2D<B extends Body2D> implements Simulation {
 	private final Collection<B> bodies;
 	private final Collection<Force> forces;
 
@@ -24,12 +24,7 @@ public class VelocityVerlet2D<B extends Body2D> {
 		this.alphaDecay = 1 - Math.pow(alphaMin, 1.0 / steps);
 	}
 
-	public void simulate() {
-		//noinspection StatementWithEmptyBody
-		while (step()) {
-		}
-	}
-
+	@Override
 	public boolean step() {
 		alpha += -alpha * alphaDecay;
 		for (Force force : forces) {

@@ -12,9 +12,9 @@ public class ForceDirectedLayout extends VelocityVerlet2D<Node> {
 
 	public ForceDirectedLayout(Graph<Node> graph) {
 		super(graph.nodes(), List.of(
-				new ForceManyBody(graph.nodes(), -30.0),
-				new ForceLink(graph, 100.0),
-				new ForceCenter(graph.nodes(), 400.0, 400.0)
+				new ForceManyBody(graph.nodes(), -200.0),
+				new ForceLink(graph, 200.0),
+				new ForceCenter(graph.nodes(), 640.0, 512.0, 0.5)
 		), 300);
 	}
 }
