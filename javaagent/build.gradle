@@ -1,0 +1,39 @@
+plugins {
+    id 'java'
+}
+
+group 'org.ogreg'
+version '1.0-SNAPSHOT'
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+
+repositories {
+    mavenCentral()
+}
+
+configurations {
+    jacocoAgent
+}
+
+dependencies {
+
+    testImplementation 'org.assertj:assertj-core:3.24.2'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.2'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.2'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+jar {
+    archiveFileName = 'mua.jar'
+    manifest {
+        attributes(
+                "Agent-Class": "org.ogreg.javaagent.MethodUsageAgent",
+                "Can-Redefine-Classes": "true",
+                "Can-Retransform-Classes": "true",
+                "Premain-Class": "org.ogreg.javaagent.MethodUsageAgent",
+        )
+    }
+}
