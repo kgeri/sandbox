@@ -1,11 +1,16 @@
 plugins {
     id 'java'
-    id 'com.google.cloud.tools.jib' version '3.2.1'
+    id 'com.google.cloud.tools.jib' version '3.5.1'
 }
 
 group 'org.ogreg'
 version '1.0-SNAPSHOT'
-sourceCompatibility = 17
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+}
 
 repositories {
     mavenCentral()
@@ -24,7 +29,7 @@ test {
 }
 
 jib {
-    from.image = 'openjdk:17-alpine'
+    from.image = 'eclipse-temurin:25-jdk-alpine'
     to.image = 'srvu:5000/nats-perftest'
     container {
         mainClass = 'org.ogreg.nats.PerfTest'
