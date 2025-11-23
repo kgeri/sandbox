@@ -5,6 +5,12 @@ plugins {
 version = "0.1"
 group = "org.ogreg"
 
+java {
+    toolchain {
+        version = JavaLanguageVersion.of(25)
+    }
+}
+
 repositories {
     mavenCentral()
 }
@@ -26,9 +32,4 @@ dependencies {
 
 application {
     mainClass.set("org.ogreg.kubernetes.Application")
-}
-
-java {
-    sourceCompatibility = '17'
-    targetCompatibility = '17'
 }
