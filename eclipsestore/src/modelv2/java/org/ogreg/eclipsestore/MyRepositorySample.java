@@ -1,4 +1,4 @@
-package org.ogreg.microstream;
+package org.ogreg.eclipsestore;
 
 import java.math.BigDecimal;
 import java.nio.file.Path;

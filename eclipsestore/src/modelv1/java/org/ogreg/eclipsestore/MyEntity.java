@@ -1,4 +1,4 @@
-package org.ogreg.microstream;
+package org.ogreg.eclipsestore;
 
 record MyEntity(String name) {
 }

@@ -1,6 +1,6 @@
-# Microstream sandbox
+# EclipseStore sandbox
 
-I found [Microstream](https://docs.microstream.one/manual/intro/welcome.html) to be particularly interesting because it promises to do away with the
+I found [EclipseStore](https://docs.eclipsestore.io/manual/intro/welcome.html) to be particularly interesting because it promises to do away with the
 hurdles of object-relational (and object-JSON, and object-`insert fancy NoSQL DB here`) mappings, and says: well, why not just map Java object graphs
 as they are, to a file?
 
@@ -11,5 +11,5 @@ the compute as close to the data as possible, which can have enormous performanc
 
 But there are some obvious questions:
 
-* [What happens on schema changes](src/test/java/org/ogreg/microstream/BackwardsCompatibilityTest.java) (a field added then dropped again, DB file
+* [What happens on schema changes](src/test/java/org/ogreg/eclipsestore/BackwardsCompatibilityTest.java) (a field added then dropped again, DB file
   remaining the same)

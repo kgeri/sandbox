@@ -1,0 +1,49 @@
+plugins {
+    id 'java'
+}
+
+version = "0.2"
+group = "org.ogreg"
+
+repositories {
+    mavenCentral()
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+}
+
+sourceSets {
+    modelv1 {
+        compileClasspath += main.compileClasspath + main.output
+        runtimeClasspath += main.compileClasspath + main.output
+    }
+    modelv2 {
+        compileClasspath += main.compileClasspath + main.output
+        runtimeClasspath += main.compileClasspath + main.output
+    }
+}
+
+dependencies {
+    implementation 'org.eclipse.store:storage-embedded:3.0.1'
+
+    testImplementation 'commons-io:commons-io:2.14.0'
+    testImplementation 'org.assertj:assertj-core:3.24.2'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.0'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+tasks.named('test') {
+    dependsOn 'compileModelv1Java', 'compileModelv2Java'
+    jvmArgs = [
+            '--add-exports', 'java.base/jdk.internal.misc=org.eclipse.serializer.base', // See https://docs.eclipsestore.io/manual/storage/faq/java-features.html
+            '--add-exports', 'java.base/jdk.internal.misc=ALL-UNNAMED'
+    ]
+}

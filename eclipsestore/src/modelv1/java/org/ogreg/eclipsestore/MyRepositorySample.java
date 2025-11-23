@@ -1,4 +1,4 @@
-package org.ogreg.microstream;
+package org.ogreg.eclipsestore;
 
 import java.nio.file.Path;
 import java.util.List;

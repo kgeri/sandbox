@@ -1,8 +1,9 @@
-package org.ogreg.microstream;
+package org.ogreg.eclipsestore;
 
-import one.microstream.reflect.ClassLoaderProvider;
-import one.microstream.storage.embedded.types.EmbeddedStorage;
-import one.microstream.storage.embedded.types.EmbeddedStorageManager;
+
+import org.eclipse.serializer.reflect.ClassLoaderProvider;
+import org.eclipse.store.storage.embedded.types.EmbeddedStorage;
+import org.eclipse.store.storage.embedded.types.EmbeddedStorageManager;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -18,7 +19,7 @@ public class MyRepository<T> implements AutoCloseable {
 				.onConnectionFoundation(cf -> {
 					cf.setClassLoaderProvider(ClassLoaderProvider.New(Thread.currentThread().getContextClassLoader()));
 				}).start();
-		
+
 		if (storageManager.root() == null) {
 			root = new ArrayList<>();
 			storageManager.setRoot(root);

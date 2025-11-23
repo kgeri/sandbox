@@ -1,4 +1,4 @@
-package org.ogreg.microstream;
+package org.ogreg.eclipsestore;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Assertions;
@@ -15,7 +15,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class BackwardsCompatibilityTest {
-	private static final Path TEST_STORAGE_PATH = Paths.get("./build/microstream");
+	private static final Path TEST_STORAGE_PATH = Paths.get("./build/eclipsestore");
 
 	@BeforeEach
 	void beforeEach() throws IOException {
@@ -24,9 +24,9 @@ public class BackwardsCompatibilityTest {
 
 	@Test
 	void testCompatibility() {
-		runWithClasspath("modelv1", "org.ogreg.microstream.MyRepositorySample");
-		runWithClasspath("modelv2", "org.ogreg.microstream.MyRepositorySample");
-		runWithClasspath("modelv1", "org.ogreg.microstream.MyRepositorySample");
+		runWithClasspath("modelv1", "org.ogreg.eclipsestore.MyRepositorySample");
+		runWithClasspath("modelv2", "org.ogreg.eclipsestore.MyRepositorySample");
+		runWithClasspath("modelv1", "org.ogreg.eclipsestore.MyRepositorySample");
 	}
 
 	private static void runWithClasspath(String module, String sampleClassName) {
