@@ -1,11 +1,11 @@
 # Micronaut Hello World
 
-| Property              | Value  |
-|-----------------------|--------|
-| Version               | 3.9.1  |
-| Footprint             | 16 MB  |
-| Startup time          | 404 ms |
-| Footprint (native)    | 62 MB  |
-| Startup time (native) | 32 ms  |
-| Native build time     | 58 s   |
-| Native build RAM      | 4 GB   |
+| Property              | Value   |
+|-----------------------|---------|
+| Version               | 4.10.2  |
+| Footprint             | 14 MB   |
+| Startup time          | 210 ms  |
+| Footprint (native)    | 78 MB   |
+| Startup time (native) | 4 ms    |
+| Native build time     | 30.8 s  |
+| Native build RAM      | 3.42 GB |

@@ -1,10 +1,16 @@
 plugins {
-    id("com.github.johnrengelman.shadow") version "7.1.2"
-    id("io.micronaut.application") version "3.7.9"
+    id("io.micronaut.application") version "4.6.1"
 }
 
-version = "0.1"
+version = "0.2"
 group = "org.ogreg"
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+        vendor = JvmVendorSpec.GRAAL_VM // Make sure to `sdk install java 25-graalce`
+    }
+}
 
 repositories {
     mavenCentral()
@@ -16,14 +22,11 @@ dependencies {
     implementation("io.micronaut:micronaut-jackson-databind")
     implementation("jakarta.annotation:jakarta.annotation-api")
     runtimeOnly("ch.qos.logback:logback-classic")
+    runtimeOnly("org.yaml:snakeyaml")
 }
 
 application {
     mainClass.set("org.ogreg.Application")
-}
-java {
-    sourceCompatibility = JavaVersion.toVersion("17")
-    targetCompatibility = JavaVersion.toVersion("17")
 }
 
 graalvmNative.toolchainDetection = true
