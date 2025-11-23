@@ -5,14 +5,21 @@ plugins {
 
 group 'org.ogreg'
 version '1.0-SNAPSHOT'
-sourceCompatibility = 21
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+}
 
 javafx {
-    version = "21.0.5"
+    version = "25.0.1"
     modules = ['javafx.controls']
 }
 
-mainClassName = 'org.ogreg.graphs.VisualizationApp'
+application {
+    mainClass = 'org.ogreg.graphs.VisualizationApp'
+}
 
 repositories {
     mavenCentral()
