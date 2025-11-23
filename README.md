@@ -10,3 +10,4 @@ For POCs, and checking out various technologies
 * [Netty HTTP/2 server + Java 11+ HttpClient with Mutual TLS](netty/)
 * [Serializer sandbox](serializers/)
 * [Svelte with D3.js](svelte/)
+* [Spring AI](spring-ai/)
