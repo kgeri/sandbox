@@ -4,7 +4,12 @@ plugins {
 
 group 'org.ogreg'
 version '1.0-SNAPSHOT'
-sourceCompatibility = 17
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+}
 
 repositories {
     mavenCentral()
