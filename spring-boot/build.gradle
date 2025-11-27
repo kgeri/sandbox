@@ -1,13 +1,19 @@
 plugins {
 	id 'java'
-	id 'org.springframework.boot' version '3.1.0'
+    id 'org.springframework.boot' version '4.0.0'
 	id 'io.spring.dependency-management' version '1.1.0'
-	id 'org.graalvm.buildtools.native' version '0.9.22'
+    id 'org.graalvm.buildtools.native' version '0.11.1'
 }
 
 group = 'org.ogreg'
 version = '0.0.1-SNAPSHOT'
-sourceCompatibility = '17'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+        vendor = JvmVendorSpec.GRAAL_VM // Make sure to `sdk install java 25-graalce`
+    }
+}
 
 repositories {
 	mavenCentral()
